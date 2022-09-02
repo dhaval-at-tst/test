@@ -1,6 +1,7 @@
 import React, { useRef, useEffect, useState, useCallback } from "react";
 import lands from "./lands.json";
 
+
 console.log(lands);
 
 const Canvas = (props) => {
@@ -56,101 +57,41 @@ const Canvas = (props) => {
     let blockSize = 32;
     let scale = 1;
 
-    const handlerClick = (e) => {
-        // context.clearRect(0, 0, canvas.width, canvas.height);
-        // context.translate(x, y);
-        // draw(context);
-        // context.translate(-x, -y);
+    const dragMap = e => {
+        console.log(e.clientX);
+        test.set(e.clientX,e.clientY);
+        
     }
-    const handlerDoubleClick = (e) => {
-        console.log()
-        const target = e.target;
 
-        // Get the bounding rectangle of target
-        const rect = target.getBoundingClientRect();
-
-        // Mouse position
-        x = e.clientX - rect.width / 2;
-        y = e.clientY - rect.height / 2;
-        context.setTransform(1, 0, 0, 1, 0, 0);
-        context.strokeRect(0, 0, canvas.width, canvas.height);
-        context.clearRect(0, 0, canvas.width, canvas.height);
-        position.update(-x, -y);
-
-        console.log('pos', position.x, position.y);
-        context.translate(position.x, position.y);        
-        context.scale(scale, scale);
-        draw(context);
-    }
     const handlerMouseDown = (e) => {
-        document.getElementsByTagName('canvas')[0].style.cursor = 'move'
-        const target = e.target;
 
-        // Get the bounding rectangle of target
-        const rect = target.getBoundingClientRect();
+        console.log(e);
+        let canvas = document.getElementsByTagName('canvas')[0]
+        canvas.style.cursor = 'move'
+        canvas.addEventListener('mousemove', dragMap);
 
-        // Mouse position
-        from.x = e.clientX - rect.left;
-        from.y = e.clientY - rect.top;
-    }
-    const handlerMouseUp = (e) => {
-        document.getElementsByTagName('canvas')[0].style.cursor = 'pointer'
-        const target = e.target;
+        
+        
+        // const target = e.target;
 
-        // Get the bounding rectangle of target
-        const rect = target.getBoundingClientRect();
+        // // Get the bounding rectangle of target
+        // const rect = target.getBoundingClientRect();
 
-        // Mouse position
-        to.x = e.clientX - rect.left;
-        to.y = e.clientY - rect.top;
-
-        x = to.x - from.x;
-        y = to.y - from.y;
-
-        console.log(x, y);
-
-        context.lineWidth = 2;
-        context.lineWidth = "auto";
-        context.setTransform(1, 0, 0, 1, 0, 0);
-        context.strokeRect(0, 0, canvas.width, canvas.height);
-        context.clearRect(0, 0, canvas.width, canvas.height);
-        position.update(x, y);
-
-        console.log('pos', position.x, position.y);
-        context.translate(position.x, position.y);
-        context.scale(scale, scale);
-        draw(context);
-        // position.set(from.x,from.y);
-    }
-    const handlerMouseMove = (e) => {
-        document.getElementsByTagName('canvas')[0].style.cursor = 'pointer'
-        const target = e.target;
-
-        // Get the bounding rectangle of target
-        const rect = target.getBoundingClientRect();
-
-        // Mouse position
-       x = e.clientX;
-        y = e.clientY;
+        // // Mouse position
+        // x = e.clientX;
+        // y = e.clientY;
 
         
 
-        test.set(x,y);
+        // position.set(x,y);
 
     }
-
-    const handlerWheel = (e) => {
-        console.clear();
-        console.log(e.deltaY > 0)
-        scale = e.deltaY < 0 ? scale + 0.1 : scale - 0.1;
-        console.log(scale);
-        context.scale(scale, scale);
-        draw(context);
-        console.log(e.deltaX);
-        console.log(e.deltaY);
-        console.log(e.deltaZ);
-        console.log(e.deltaMode);
+    const handlerMouseUp = () =>{
+        let canvas = document.getElementsByTagName('canvas')[0]
+        canvas.style.cursor = 'pointer'
+        canvas.removeEventListener('mousemove', dragMap);
     }
+
 
     function getRandomInt(max) {
         return Math.floor(Math.random() * max);
@@ -176,7 +117,7 @@ const Canvas = (props) => {
     };
 
     const drawMap = (ctx) => {
-        console.log('drawmap');
+        // console.log('drawmap');
         let x = test.x, y = test.y,count = 1;
         lands.map(land => {
             ctx.fillStyle = getColor[land?.type];
@@ -190,7 +131,7 @@ const Canvas = (props) => {
             ctx.strokeRect(x, y, blockSize - 1, blockSize - 1);
             if (count == 104) {
                 y += blockSize;
-                x = 0;
+                x = test.x;
                 count = 0;
             } else {
                 x += blockSize;
@@ -207,16 +148,18 @@ const Canvas = (props) => {
     }, [])
 
 
-    setTimeout(() => {
-        blockSize = 48;
-    }, 3000);
+
+    const drawBox = ctx => {
+        ctx.fillStyle = "white";
+        ctx.fillRect(test.x,test.y,100,100);
+    }
 
     function animate(params) {
         requestAnimationFrame(animate);
-        context.setTransform(1, 0, 0, 1, 0, 0);
-        // context.strokeRect(0, 0, canvas.width, canvas.height);
+        context.setTransform(1, 0, 0, 1, 0, 0);        
         context.clearRect(0, 0, canvas.width, canvas.height);   
-        drawMap(context);
+        draw(context);
+        // drawBox(context);
     }
 
 
@@ -234,12 +177,12 @@ const Canvas = (props) => {
     }, [draw]);
 
     return <canvas ref={canvasRef}
-        onClick={handlerClick}
+        // onClick={handlerClick}
         onMouseDown={handlerMouseDown}
         onMouseUp={handlerMouseUp}
-        onDoubleClick={handlerDoubleClick}
-        onWheel={handlerWheel}
-        onMouseMove={handlerMouseMove}
+        // onDoubleClick={handlerDoubleClick}
+        // onWheel={handlerWheel}
+        // onMouseMove={handlerMouseMove}
         {...props} />;
 };
 
