@@ -29,6 +29,15 @@ const Canvas = (props) => {
         }
     }
 
+    const test = {
+        x: 0,
+        y: 0,
+        set(x_, y_) {
+            this.x = x_;
+            this.y = y_;
+        }
+    }
+
     const position = {
         x: 0,
         y: 0,
@@ -69,7 +78,7 @@ const Canvas = (props) => {
         position.update(-x, -y);
 
         console.log('pos', position.x, position.y);
-        context.translate(position.x, position.y);
+        context.translate(position.x, position.y);        
         context.scale(scale, scale);
         draw(context);
     }
@@ -113,6 +122,22 @@ const Canvas = (props) => {
         draw(context);
         // position.set(from.x,from.y);
     }
+    const handlerMouseMove = (e) => {
+        document.getElementsByTagName('canvas')[0].style.cursor = 'pointer'
+        const target = e.target;
+
+        // Get the bounding rectangle of target
+        const rect = target.getBoundingClientRect();
+
+        // Mouse position
+       x = e.clientX;
+        y = e.clientY;
+
+        
+
+        test.set(x,y);
+
+    }
 
     const handlerWheel = (e) => {
         console.clear();
@@ -150,54 +175,10 @@ const Canvas = (props) => {
         6: "#49D3F2",
     };
 
-    const draw = useCallback(ctx => {
-        console.log('draw');
-        context.clearRect(0, 0, canvas.width, canvas.height);
-        let x = 0, y = 0;
-        ctx.strokeStyle = 'transparent';
-
-        //Our first draw
-        ctx.fillStyle = "#F09819";
-        // for (let i = 0; i < numBlocksInColumn; i++) {
-        //     for (let j = 0; j < numBlocksInRow; j++) {
-
-        //         ctx.fillStyle = colors[getRandomInt(colors.length)];
-
-        //         ctx.fillRect(
-        //             x,
-        //             y,
-        //             blockSize,
-        //             blockSize
-        //         );
-        //         ctx.strokeRect(x, y, blockSize, blockSize);
-
-        //     }
-        //     x = 0;
-        //     y += blockSize;
-        // }
-        // x = y = 0;
-
-        // ctx.fillStyle = "#EDDE5D";
-        // for (let i = 0; i < numBlocksInColumn; i++) {
-        //     for (let j = 0; j < numBlocksInRow; j++) {
-        //         if ((i + j) % 2 != 0) {
-        //             ctx.fillRect(
-        //                 x,
-        //                 y,
-        //                 blockSize,
-        //                 blockSize
-        //             );
-        //             ctx.strokeRect(x, y, blockSize, blockSize);
-        //         }
-        //         x += blockSize;
-        //     }
-        //     x = 0;
-        //     y += blockSize;
-        // }
-        let count = 1;
+    const drawMap = (ctx) => {
+        console.log('drawmap');
+        let x = test.x, y = test.y,count = 1;
         lands.map(land => {
-
-
             ctx.fillStyle = getColor[land?.type];
             ctx.fillRect(
                 x,
@@ -215,12 +196,28 @@ const Canvas = (props) => {
                 x += blockSize;
             }
             count++;
-
         });
+    }
+
+    const draw = useCallback(ctx => {
+        console.log('draw');
+        context.clearRect(0, 0, canvas.width, canvas.height);
+        drawMap(ctx);
 
     }, [])
 
 
+    setTimeout(() => {
+        blockSize = 48;
+    }, 3000);
+
+    function animate(params) {
+        requestAnimationFrame(animate);
+        context.setTransform(1, 0, 0, 1, 0, 0);
+        // context.strokeRect(0, 0, canvas.width, canvas.height);
+        context.clearRect(0, 0, canvas.width, canvas.height);   
+        drawMap(context);
+    }
 
 
 
@@ -231,8 +228,8 @@ const Canvas = (props) => {
         context = canvas.getContext("2d");
         //Our draw come here
         context.scale(scale, scale);
-        draw(context);
-window.requestAnimationFrame(draw);
+        animate();
+        // draw(context);
 
     }, [draw]);
 
@@ -242,6 +239,7 @@ window.requestAnimationFrame(draw);
         onMouseUp={handlerMouseUp}
         onDoubleClick={handlerDoubleClick}
         onWheel={handlerWheel}
+        onMouseMove={handlerMouseMove}
         {...props} />;
 };
 
