@@ -1,8 +1,6 @@
 import React, { useRef, useEffect, useState, useCallback } from "react";
 import lands from "./lands.json";
 
-console.log(lands);
-
 const Canvas = (props) => {
     const canvasRef = useRef(null);
     let canvas;
@@ -76,27 +74,41 @@ const Canvas = (props) => {
         context.strokeRect(0, 0, canvas.width, canvas.height);
         context.clearRect(0, 0, canvas.width, canvas.height);
         position.update(-x, -y);
+        
 
         console.log('pos', position.x, position.y);
-        context.translate(position.x, position.y);        
+        context.translate(position.x, position.y);
         context.scale(scale, scale);
         draw(context);
     }
-    const handlerMouseDown = (e) => {
-        document.getElementsByTagName('canvas')[0].style.cursor = 'move'
-        const target = e.target;
 
-        // Get the bounding rectangle of target
-        const rect = target.getBoundingClientRect();
-
-        // Mouse position
-        from.x = e.clientX - rect.left;
-        from.y = e.clientY - rect.top;
+    const drawMap = (ctx) => {        
+        let x = position.x, y = position.y, count = 1;
+        lands.map(land => {
+            ctx.fillStyle = getColor[land?.type];
+            ctx.fillRect(
+                x,
+                y,
+                blockSize,
+                blockSize
+            );
+            ctx.strokeStyle = gerBorderColor[land?.type]
+            ctx.strokeRect(x, y, blockSize - 1, blockSize - 1);
+            if (count == 104) {
+                y += blockSize;
+                x = 0;
+                count = 0;
+            } else {
+                x += blockSize;
+            }
+            count++;
+        });
     }
-    const handlerMouseUp = (e) => {
-        document.getElementsByTagName('canvas')[0].style.cursor = 'pointer'
-        const target = e.target;
 
+    const dragMap = e => {
+        let x,y;
+
+        const target = e.target;
         // Get the bounding rectangle of target
         const rect = target.getBoundingClientRect();
 
@@ -107,37 +119,37 @@ const Canvas = (props) => {
         x = to.x - from.x;
         y = to.y - from.y;
 
-        console.log(x, y);
+        console.log(position.x,position.y)
+        console.log(x,y)
 
-        context.lineWidth = 2;
-        context.lineWidth = "auto";
-        context.setTransform(1, 0, 0, 1, 0, 0);
-        context.strokeRect(0, 0, canvas.width, canvas.height);
-        context.clearRect(0, 0, canvas.width, canvas.height);
         position.update(x, y);
-
-        console.log('pos', position.x, position.y);
-        context.translate(position.x, position.y);
-        context.scale(scale, scale);
-        draw(context);
-        // position.set(from.x,from.y);
+        
     }
-    const handlerMouseMove = (e) => {
-        document.getElementsByTagName('canvas')[0].style.cursor = 'pointer'
+
+    const handlerMouseDown = (e) => {
+
+        console.log(e);
+        let canvas = document.getElementsByTagName('canvas')[0]
+        canvas.style.cursor = 'move'
+        canvas.addEventListener('mousemove', dragMap);
+
         const target = e.target;
 
         // Get the bounding rectangle of target
         const rect = target.getBoundingClientRect();
 
         // Mouse position
-       x = e.clientX;
-        y = e.clientY;
-
-        
-
-        test.set(x,y);
+        from.x = e.clientX - rect.left;
+        from.y = e.clientY - rect.top;
 
     }
+    const handlerMouseUp = () => {
+        let canvas = document.getElementsByTagName('canvas')[0]
+        canvas.style.cursor = 'pointer'
+        canvas.removeEventListener('mousemove', dragMap);
+        
+    }
+
 
     const handlerWheel = (e) => {
         console.clear();
@@ -175,47 +187,24 @@ const Canvas = (props) => {
         6: "#49D3F2",
     };
 
-    const drawMap = (ctx) => {
-        console.log('drawmap');
-        let x = test.x, y = test.y,count = 1;
-        lands.map(land => {
-            ctx.fillStyle = getColor[land?.type];
-            ctx.fillRect(
-                x,
-                y,
-                blockSize,
-                blockSize
-            );
-            ctx.strokeStyle = gerBorderColor[land?.type]
-            ctx.strokeRect(x, y, blockSize - 1, blockSize - 1);
-            if (count == 104) {
-                y += blockSize;
-                x = 0;
-                count = 0;
-            } else {
-                x += blockSize;
-            }
-            count++;
-        });
-    }
+
 
     const draw = useCallback(ctx => {
         console.log('draw');
         context.clearRect(0, 0, canvas.width, canvas.height);
+        // context.translate(position.x,position.y);
         drawMap(ctx);
 
     }, [])
 
 
-    setTimeout(() => {
-        blockSize = 48;
-    }, 3000);
 
     function animate(params) {
         requestAnimationFrame(animate);
         context.setTransform(1, 0, 0, 1, 0, 0);
         // context.strokeRect(0, 0, canvas.width, canvas.height);
-        context.clearRect(0, 0, canvas.width, canvas.height);   
+        context.clearRect(0, 0, canvas.width, canvas.height);
+        // context.translate(position.x,position.y);
         drawMap(context);
     }
 
@@ -234,12 +223,8 @@ const Canvas = (props) => {
     }, [draw]);
 
     return <canvas ref={canvasRef}
-        onClick={handlerClick}
         onMouseDown={handlerMouseDown}
         onMouseUp={handlerMouseUp}
-        onDoubleClick={handlerDoubleClick}
-        onWheel={handlerWheel}
-        onMouseMove={handlerMouseMove}
         {...props} />;
 };
 
