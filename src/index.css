@@ -7,9 +7,26 @@
 body {
   width: 100%;
   height: 100%;
-  overflow: hidden;
 }
 
 canvas {
   background-color: #000;
+}
+
+::-webkit-scrollbar {
+  --size: 8px;
+  width: var(--size);
+  height: var(--size);
+}
+
+::-webkit-scrollbar-track     {
+  background:#999;
+}
+::-webkit-scrollbar-thumb{
+  background:#ccc;
+  border: 1px solid #aaa;
+}
+
+::-webkit-scrollbar-corner {
+    background: #999;
 }
